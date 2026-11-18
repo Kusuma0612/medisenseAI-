@@ -1,0 +1,138 @@
+
+
+{% extends "base.html" %}
+
+{% block title %}Dashboard | MediSense AI{% endblock %}
+
+{% block content %}
+
+<section class="hero">
+    <div>
+        <span class="pill">RESEARCH PROTOTYPE</span>
+
+        <h1>
+            Understand the workflow.<br>
+            <em>Explore the framework.</em>
+        </h1>
+
+        <p>
+            Enter de-identified patient-generated text, manage research
+            sessions and explore the educational disease library.
+        </p>
+
+        <a class="btn" href="{{ url_for('analysis') }}">
+            Start a new session →
+        </a>
+    </div>
+
+    <div class="hero-art">
+        <div class="orb">✚</div>
+
+        <div class="float-card">
+            Ensemble framework
+            <b>3 transformer models</b>
+            <small>Soft Voting Architecture</small>
+        </div>
+    </div>
+</section>
+
+<!-- DASHBOARD STATISTICS -->
+
+<div class="grid three">
+
+    <article class="stat">
+        <small>MODEL STATUS</small>
+        <strong class="status">{{ model_status }}</strong>
+        <span>Three transformer models</span>
+    </article>
+
+    <article class="stat">
+        <small>DISEASE TOPICS</small>
+        <strong>22</strong>
+        <span>Available disease categories</span>
+    </article>
+
+    <article class="stat">
+        <small>RESEARCH SESSIONS</small>
+        <strong>{{ count }}</strong>
+        <span>Total saved analysis records</span>
+    </article>
+
+</div>
+
+<!-- INDIVIDUAL MODEL STATUS -->
+
+<section class="section-head">
+    <div>
+        <span class="eyebrow">MODEL MONITORING</span>
+        <h2>Transformer Model Status</h2>
+    </div>
+</section>
+
+<div class="grid three">
+
+    {% for name, status in model_statuses.items() %}
+
+    <article class="stat">
+
+        <small>{{ name }}</small>
+
+        {% if status.available %}
+            <strong class="status">Available</strong>
+            <span>{{ status.message }}</span>
+        {% else %}
+            <strong class="status">Unavailable</strong>
+            <span>Check model files and loading errors</span>
+        {% endif %}
+
+    </article>
+
+    {% endfor %}
+
+</div>
+
+<!-- WORKSPACE -->
+
+<section class="section-head">
+    <div>
+        <span class="eyebrow">WORKSPACE</span>
+        <h2>What would you like to do?</h2>
+    </div>
+</section>
+
+<div class="grid three">
+
+    <a class="feature" href="{{ url_for('analysis') }}">
+        <b>01 / New analysis</b>
+        <h3>Submit patient text</h3>
+        <p>Enter a text sample and optional context.</p>
+        <span>Open workspace →</span>
+    </a>
+
+    <a class="feature" href="{{ url_for('history') }}">
+        <b>02 / History</b>
+        <h3>Review sessions</h3>
+        <p>Find, review or delete local research records.</p>
+        <span>View history →</span>
+    </a>
+
+    <a class="feature" href="{{ url_for('disease_library') }}">
+        <b>03 / Learning</b>
+        <h3>Disease library</h3>
+        <p>Browse short educational descriptions.</p>
+        <span>Explore library →</span>
+    </a>
+
+</div>
+
+<!-- DISCLAIMER -->
+
+<div class="notice">
+    Model predictions are generated using a three-model
+    Soft Voting framework when all required models are loaded.
+    This prototype does not provide medical advice.
+</div>
+
+{% endblock %}
+
+

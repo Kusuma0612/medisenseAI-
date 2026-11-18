@@ -1,0 +1,467 @@
+
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Analysis Results | MediSense AI</title>
+
+    <!-- Chart.js -->
+    <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+
+    <style>
+        * {
+            box-sizing: border-box;
+        }
+
+        body {
+            margin: 0;
+            padding: 25px;
+            font-family: Arial, sans-serif;
+            background: #f3f6fb;
+            color: #243047;
+        }
+
+        .container {
+            max-width: 1100px;
+            margin: 25px auto;
+        }
+
+        .header {
+            margin-bottom: 25px;
+        }
+
+        .header h1 {
+            color: #173b70;
+            margin-bottom: 8px;
+        }
+
+        .card {
+            background: white;
+            border-radius: 12px;
+            padding: 24px;
+            margin-bottom: 20px;
+            box-shadow: 0 3px 14px rgba(0,0,0,0.06);
+        }
+
+        .ensemble {
+            border-left: 5px solid #16866b;
+        }
+
+        .ensemble h2 {
+            color: #16866b;
+        }
+
+        .prediction {
+            font-size: 27px;
+            font-weight: bold;
+            color: #173b70;
+            margin: 12px 0;
+        }
+
+        .score {
+            color: #58677e;
+            font-size: 15px;
+        }
+
+        .model-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(220px, 1fr));
+            gap: 16px;
+        }
+
+        .model-card {
+            border: 1px solid #e1e8f0;
+            border-radius: 10px;
+            padding: 18px;
+        }
+
+        .model-card h3 {
+            color: #24558c;
+            margin-top: 0;
+        }
+
+        .model-result {
+            font-size: 19px;
+            font-weight: bold;
+            margin: 12px 0;
+        }
+
+        .top-item {
+            padding: 12px;
+            border-bottom: 1px solid #e7ebf1;
+            display: flex;
+            justify-content: space-between;
+            gap: 12px;
+        }
+
+        .patient-text {
+            line-height: 1.6;
+            overflow-wrap: anywhere;
+            color: #536176;
+        }
+
+        .button {
+            display: inline-block;
+            padding: 12px 18px;
+            margin: 8px 8px 0 0;
+            border-radius: 7px;
+            background: #24558c;
+            color: white;
+            text-decoration: none;
+        }
+
+        .button.secondary {
+            background: #64748b;
+        }
+
+        .notice {
+            background: #fff7e6;
+            border: 1px solid #f0d9a7;
+            padding: 15px;
+            border-radius: 8px;
+            line-height: 1.5;
+            color: #72551b;
+        }
+
+        .chart-card {
+            background: white;
+            border-radius: 12px;
+            padding: 24px;
+            margin-bottom: 20px;
+            box-shadow: 0 3px 14px rgba(0,0,0,0.06);
+        }
+
+        .chart-card h2 {
+            color: #173b70;
+            margin-top: 0;
+        }
+
+        .chart-container {
+            position: relative;
+            width: 100%;
+            height: 330px;
+        }
+
+        .chart-description {
+            color: #64748b;
+            font-size: 14px;
+            margin-bottom: 18px;
+        }
+
+        @media (max-width: 600px) {
+            body {
+                padding: 12px;
+            }
+
+            .card, .chart-card {
+                padding: 17px;
+            }
+
+            .chart-container {
+                height: 280px;
+            }
+        }
+    </style>
+</head>
+
+<body>
+<div class="container">
+
+    <div class="header">
+        <h1>MediSense AI</h1>
+        <p>Transformer Ensemble Analysis Results</p>
+    </div>
+
+    <!-- Ensemble Result -->
+    <div class="card ensemble">
+        <h2>Soft Voting Ensemble Result</h2>
+
+        <div class="prediction">
+            {{ result.predicted_disease }}
+        </div>
+
+        <div class="score">
+            Model score: {{ result.confidence }}%
+        </div>
+
+        <p>
+            Combined output from BioBERT, PubMedBERT and DeBERTa
+            using equal-weight soft voting.
+        </p>
+    </div>
+
+    <!-- Individual Model Results -->
+    <div class="card">
+        <h2>Individual Model Predictions</h2>
+
+        <div class="model-grid">
+
+            {% for model_name, prediction in result.model_predictions.items() %}
+
+            <div class="model-card">
+                <h3>{{ model_name }}</h3>
+
+                <div class="model-result">
+                    {{ prediction.predicted_disease }}
+                </div>
+
+                <p class="score">
+                    Model score: {{ prediction.confidence }}%
+                </p>
+            </div>
+
+            {% endfor %}
+
+        </div>
+    </div>
+
+    <!-- GRAPH 1 -->
+    <div class="chart-card">
+        <h2>Model Confidence Comparison</h2>
+
+        <p class="chart-description">
+            Comparison of the highest prediction score
+            produced by each individual model.
+        </p>
+
+        <div class="chart-container">
+            <canvas id="modelConfidenceChart"></canvas>
+        </div>
+    </div>
+
+    <!-- Top 5 Predictions -->
+    <div class="card">
+        <h2>Top 5 Ensemble Outputs</h2>
+
+        {% for item in result.top_predictions %}
+
+        <div class="top-item">
+            <span>{{ loop.index }}. {{ item.disease }}</span>
+            <strong>{{ item.score }}%</strong>
+        </div>
+
+        {% endfor %}
+    </div>
+
+    <!-- GRAPH 2 -->
+    <div class="chart-card">
+        <h2>Top 5 Prediction Graph</h2>
+
+        <p class="chart-description">
+            Comparison of the five highest-scoring categories
+            from the Soft Voting ensemble.
+        </p>
+
+        <div class="chart-container">
+            <canvas id="topPredictionsChart"></canvas>
+        </div>
+    </div>
+
+    <!-- GRAPH 3 -->
+    <div class="chart-card">
+        <h2>Model Prediction Agreement</h2>
+
+        <p class="chart-description">
+            Number of individual models selecting each predicted
+            category. This counts each model's top prediction once.
+        </p>
+
+        <div class="chart-container">
+            <canvas id="agreementChart"></canvas>
+        </div>
+    </div>
+
+    <!-- Submitted Text -->
+    <div class="card">
+        <h2>Submitted Text</h2>
+
+        <p class="patient-text">
+            {{ record.patient_text }}
+        </p>
+
+        <p>
+            <strong>Duration:</strong> {{ record.duration }}
+        </p>
+
+        <p>
+            <strong>Self-reported severity:</strong> {{ record.severity }}
+        </p>
+
+        <p>
+            <strong>Date:</strong> {{ record.created }}
+        </p>
+    </div>
+
+    <!-- Safety Notice -->
+    <div class="notice">
+        <strong>Research prototype notice:</strong>
+        These are machine-learning predictions, not medical diagnoses.
+        Model scores are not clinically validated probabilities.
+        Do not use these results to make healthcare decisions.
+    </div>
+
+    <br>
+
+    <a href="{{ url_for('analysis') }}" class="button">
+        New Analysis
+    </a>
+
+    <a href="{{ url_for('history') }}" class="button secondary">
+        View History
+    </a>
+
+    <a href="{{ url_for('dashboard') }}" class="button secondary">
+        Dashboard
+    </a>
+
+</div>
+
+<!-- Dynamic Graph Data -->
+<script>
+    const modelPredictions = {{ result.model_predictions | tojson }};
+    const topPredictions = {{ result.top_predictions | tojson }};
+
+    // GRAPH 1: Individual Model Confidence
+    const modelNames = Object.keys(modelPredictions);
+
+    const modelScores = modelNames.map(
+        name => modelPredictions[name].confidence
+    );
+
+    new Chart(document.getElementById("modelConfidenceChart"), {
+        type: "bar",
+
+        data: {
+            labels: modelNames,
+
+            datasets: [{
+                label: "Model Score (%)",
+                data: modelScores,
+                backgroundColor: [
+                    "#3977b9",
+                    "#18a58b",
+                    "#9272cf"
+                ],
+                borderRadius: 7
+            }]
+        },
+
+        options: {
+            responsive: true,
+            maintainAspectRatio: false,
+
+            scales: {
+                y: {
+                    beginAtZero: true,
+                    max: 100,
+                    title: {
+                        display: true,
+                        text: "Score (%)"
+                    }
+                }
+            },
+
+            plugins: {
+                legend: {
+                    display: false
+                }
+            }
+        }
+    });
+
+
+    // GRAPH 2: Top 5 Ensemble Predictions
+    const diseaseNames = topPredictions.map(
+        item => item.disease
+    );
+
+    const diseaseScores = topPredictions.map(
+        item => item.score
+    );
+
+    new Chart(document.getElementById("topPredictionsChart"), {
+        type: "bar",
+
+        data: {
+            labels: diseaseNames,
+
+            datasets: [{
+                label: "Ensemble Score (%)",
+                data: diseaseScores,
+                backgroundColor: "#18a58b",
+                borderRadius: 7
+            }]
+        },
+
+        options: {
+            indexAxis: "y",
+            responsive: true,
+            maintainAspectRatio: false,
+
+            scales: {
+                x: {
+                    beginAtZero: true,
+                    title: {
+                        display: true,
+                        text: "Ensemble Score (%)"
+                    }
+                }
+            },
+
+            plugins: {
+                legend: {
+                    display: false
+                }
+            }
+        }
+    });
+
+
+    // GRAPH 3: Model Prediction Agreement
+    const voteCounts = {};
+
+    modelNames.forEach(name => {
+        const disease =
+            modelPredictions[name].predicted_disease;
+
+        voteCounts[disease] = (voteCounts[disease] || 0) + 1;
+    });
+
+    const agreementLabels = Object.keys(voteCounts);
+    const agreementValues = Object.values(voteCounts);
+
+    new Chart(document.getElementById("agreementChart"), {
+        type: "doughnut",
+
+        data: {
+            labels: agreementLabels,
+
+            datasets: [{
+                label: "Number of Models",
+                data: agreementValues,
+                backgroundColor: [
+                    "#3977b9",
+                    "#18a58b",
+                    "#9272cf"
+                ],
+                borderWidth: 2
+            }]
+        },
+
+        options: {
+            responsive: true,
+            maintainAspectRatio: false,
+
+            plugins: {
+                legend: {
+                    position: "bottom"
+                }
+            }
+        }
+    });
+</script>
+
+</body>
+</html>
+

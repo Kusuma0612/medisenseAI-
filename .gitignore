@@ -1,0 +1,23 @@
+__pycache__/
+*.pyc
+.venv/
+venv/
+.env
+
+# Trained transformer models
+models/
+*.safetensors
+*.bin
+*.pt
+*.pth
+
+# Dataset files
+*.csv
+dataset/
+
+# Archives and temporary files
+*.zip
+*.log
+history.json
+*.lnk
+desktop.ini

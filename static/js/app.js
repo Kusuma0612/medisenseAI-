@@ -1,0 +1,2 @@
+function toggleMenu(){document.getElementById('nav')?.classList.toggle('open');}
+document.addEventListener('DOMContentLoaded',()=>{const t=document.getElementById('patient_text'),c=document.getElementById('charCount');if(t&&c){const update=()=>c.textContent=t.value.length;t.addEventListener('input',update);update();}});

@@ -1,0 +1,233 @@
+{% extends "base.html" %}
+
+{% block title %}New Analysis | MediSense AI{% endblock %}
+
+{% block content %}
+
+<style>
+.analysis-card {
+    background: var(--card, #fff);
+    border: 1px solid var(--border, #ddd);
+    border-radius: 14px;
+    padding: 22px;
+    margin-bottom: 20px;
+}
+.analysis-grid {
+    display: grid;
+    grid-template-columns: repeat(2, minmax(0, 1fr));
+    gap: 16px;
+}
+.analysis-field {
+    display: flex;
+    flex-direction: column;
+    gap: 7px;
+}
+.analysis-field.full {
+    grid-column: 1 / -1;
+}
+.analysis-field label {
+    font-weight: 600;
+}
+.analysis-field input,
+.analysis-field select,
+.analysis-field textarea {
+    width: 100%;
+    box-sizing: border-box;
+    padding: 11px;
+    border: 1px solid var(--border, #ccc);
+    border-radius: 8px;
+    font: inherit;
+}
+.analysis-field textarea {
+    min-height: 90px;
+    resize: vertical;
+}
+.symptom-options {
+    display: grid;
+    grid-template-columns: repeat(3, minmax(0, 1fr));
+    gap: 10px;
+}
+.symptom-options label {
+    font-weight: normal;
+}
+.section-heading {
+    margin-bottom: 15px;
+}
+.optional-note {
+    font-size: 13px;
+    opacity: .7;
+}
+@media(max-width:650px) {
+    .analysis-grid {
+        grid-template-columns: 1fr;
+    }
+    .symptom-options {
+        grid-template-columns: repeat(2, minmax(0, 1fr));
+    }
+}
+</style>
+
+<div class="page-heading">
+    <h2 style="color:red;">NEW ANALYSIS TEMPLATE TEST</h2>
+    <h1>New Research Analysis</h1>
+    <p>Enter symptom information for your AI research session.</p>
+</div>
+
+<form method="POST" action="{{ url_for('analysis') }}">
+
+    <div class="analysis-card">
+        <h2 class="section-heading">1. Basic Information</h2>
+
+        <div class="analysis-grid">
+            <div class="analysis-field">
+                <label for="age">Age</label>
+                <input type="number" id="age" name="age"
+                       min="1" max="120" placeholder="Enter age">
+            </div>
+
+            <div class="analysis-field">
+                <label for="gender">Gender</label>
+                <select id="gender" name="gender">
+                    <option value="">Select gender</option>
+                    <option value="Female">Female</option>
+                    <option value="Male">Male</option>
+                    <option value="Other">Other</option>
+                    <option value="Prefer not to say">Prefer not to say</option>
+                </select>
+            </div>
+
+            <div class="analysis-field">
+                <label for="height">Height (cm) <span class="optional-note">Optional</span></label>
+                <input type="number" id="height" name="height"
+                       min="1" max="300" step="0.1" placeholder="Height in cm">
+            </div>
+
+            <div class="analysis-field">
+                <label for="weight">Weight (kg) <span class="optional-note">Optional</span></label>
+                <input type="number" id="weight" name="weight"
+                       min="1" max="500" step="0.1" placeholder="Weight in kg">
+            </div>
+        </div>
+    </div>
+
+    <div class="analysis-card">
+        <h2 class="section-heading">2. Symptom Information</h2>
+
+        <div class="analysis-grid">
+            <div class="analysis-field">
+                <label for="severity">Symptom Severity</label>
+                <select id="severity" name="severity" required>
+                    <option value="">Select severity</option>
+                    <option value="Mild">Mild</option>
+                    <option value="Moderate">Moderate</option>
+                    <option value="Severe">Severe</option>
+                </select>
+            </div>
+
+            <div class="analysis-field">
+                <label for="duration">Duration (Days)</label>
+                <input type="number" id="duration" name="duration"
+                       min="0" max="3650" placeholder="Number of days">
+            </div>
+
+            <div class="analysis-field">
+                <label for="symptom_onset">Symptom Onset</label>
+                <select id="symptom_onset" name="symptom_onset">
+                    <option value="">Select onset</option>
+                    <option value="Sudden">Sudden</option>
+                    <option value="Gradual">Gradual</option>
+                    <option value="Unknown">Unknown</option>
+                </select>
+            </div>
+
+            <div class="analysis-field">
+                <label for="symptom_frequency">Symptom Frequency</label>
+                <select id="symptom_frequency" name="symptom_frequency">
+                    <option value="">Select frequency</option>
+                    <option value="Occasional">Occasional</option>
+                    <option value="Frequent">Frequent</option>
+                    <option value="Continuous">Continuous</option>
+                    <option value="Comes and goes">Comes and goes</option>
+                </select>
+            </div>
+
+            <div class="analysis-field full">
+                <label>Symptom Checklist</label>
+                <div class="symptom-options">
+                    {% for symptom in [
+                        "Fever", "Headache", "Cough", "Fatigue",
+                        "Body Pain", "Nausea", "Vomiting", "Dizziness",
+                        "Sore Throat", "Stomach Pain", "Breathing Difficulty",
+                        "Joint Pain"
+                    ] %}
+                    <label>
+                        <input type="checkbox" name="symptom_checklist"
+                               value="{{ symptom }}">
+                        {{ symptom }}
+                    </label>
+                    {% endfor %}
+                </div>
+            </div>
+
+            <div class="analysis-field full">
+                <label for="additional_symptoms">Additional Symptoms</label>
+                <textarea id="additional_symptoms"
+                          name="additional_symptoms"
+                          placeholder="Enter other symptoms, if any"></textarea>
+            </div>
+
+            <div class="analysis-field full">
+                <label for="patient_text">Complete Symptom Description</label>
+                <textarea id="patient_text" name="patient_text"
+                          required minlength="10" maxlength="3000"
+                          placeholder="Describe the symptoms in detail..."></textarea>
+            </div>
+        </div>
+    </div>
+
+    <div class="analysis-card">
+        <h2 class="section-heading">3. Symptom Timeline</h2>
+
+        <div class="analysis-field">
+            <label for="symptom_timeline">How have the symptoms changed?</label>
+            <textarea id="symptom_timeline" name="symptom_timeline"
+                      placeholder="Describe the changes over time, if known..."></textarea>
+        </div>
+    </div>
+
+    <div class="analysis-card">
+        <h2 class="section-heading">4. Optional Health Background</h2>
+
+        <div class="analysis-grid">
+            <div class="analysis-field">
+                <label for="medications">Current Medications</label>
+                <textarea id="medications" name="medications"
+                          placeholder="Optional"></textarea>
+            </div>
+
+            <div class="analysis-field">
+                <label for="allergies">Known Allergies</label>
+                <textarea id="allergies" name="allergies"
+                          placeholder="Optional"></textarea>
+            </div>
+
+            <div class="analysis-field full">
+                <label for="health_conditions">Existing Health Conditions</label>
+                <textarea id="health_conditions" name="health_conditions"
+                          placeholder="Optional"></textarea>
+            </div>
+        </div>
+    </div>
+
+    <p class="optional-note">
+        Academic research prototype only. Do not enter identifying or
+        sensitive real-patient information. Outputs are not medical diagnoses.
+    </p>
+
+    <button class="btn" type="submit">
+        Save research session →
+    </button>
+
+</form>
+
+{% endblock %}

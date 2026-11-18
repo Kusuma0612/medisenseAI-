@@ -1,0 +1,569 @@
+
+{% extends "base.html" %}
+
+{% block title %}AI Intelligence Lab | MediSense AI{% endblock %}
+
+{% block content %}
+
+<section class="page-heading">
+    <div class="eyebrow">ADVANCED RESEARCH MODULE</div>
+    <h1>AI Intelligence Lab</h1>
+    <p>Explore ensemble behaviour, model agreement and prediction changes using the existing three transformer models.</p>
+</section>
+
+<style>
+.lab-hero {
+    background: linear-gradient(135deg, #102b46, #176b70);
+    color: white;
+    padding: 28px;
+    border-radius: 18px;
+    margin: 22px 0;
+}
+.lab-grid {
+    display: grid;
+    grid-template-columns: repeat(auto-fit,minmax(220px,1fr));
+    gap: 16px;
+    margin: 20px 0;
+}
+.lab-card {
+    background: var(--card, #fff);
+    border: 1px solid var(--border, #ddd);
+    border-radius: 14px;
+    padding: 20px;
+}
+.lab-card h3 { margin-top: 0; }
+.lab-section {
+    margin: 28px 0;
+    padding: 22px;
+    border: 1px solid var(--border, #ddd);
+    border-radius: 16px;
+    background: var(--card, #fff);
+}
+.lab-flow {
+    display: flex;
+    flex-wrap: wrap;
+    align-items: center;
+    justify-content: center;
+    gap: 10px;
+    margin: 22px 0;
+}
+.lab-node {
+    padding: 14px;
+    min-width: 125px;
+    text-align: center;
+    border: 1px solid #80aeb5;
+    border-radius: 12px;
+    background: #eaf6f5;
+    color: #173b46;
+    font-weight: 600;
+}
+.lab-arrow { font-size: 22px; }
+.lab-button {
+    border: 0;
+    padding: 12px 20px;
+    border-radius: 9px;
+    background: #176b70;
+    color: white;
+    cursor: pointer;
+    font-weight: 600;
+}
+.lab-button:hover { opacity: .88; }
+.lab-input {
+    width: 100%;
+    box-sizing: border-box;
+    padding: 12px;
+    border: 1px solid #aaa;
+    border-radius: 9px;
+    margin: 8px 0 14px;
+    font: inherit;
+}
+.lab-result {
+    padding: 16px;
+    border-radius: 12px;
+    background: #eaf6f5;
+    color: #173b46;
+    margin-top: 16px;
+}
+.lab-table {
+    width: 100%;
+    border-collapse: collapse;
+}
+.lab-table th, .lab-table td {
+    border: 1px solid #ddd;
+    padding: 11px;
+    text-align: left;
+}
+.lab-table th { background: #eaf6f5; }
+.lab-muted { color: #777; font-size: .9rem; }
+@media(max-width:600px) {
+    .lab-section { padding: 14px; }
+    .lab-flow { flex-direction: column; }
+    .lab-arrow { transform: rotate(90deg); }
+}
+</style>
+
+<div class="lab-hero">
+    <div class="eyebrow">THREE-MODEL ENSEMBLE FRAMEWORK</div>
+    <h2>Beyond Prediction. Explore Model Behaviour.</h2>
+    <p>
+        Investigate how BioBERT, PubMedBERT and DeBERTa
+        produce individual outputs and how soft voting combines them.
+    </p>
+    <strong>Existing models · No additional model downloads · No API required</strong>
+</div>
+
+<div class="lab-grid">
+
+    <div class="lab-card">
+        <h3>01 · Consensus Intelligence</h3>
+        <p>Understand agreement and disagreement among the three model outputs.</p>
+        <a href="#consensus">Explore consensus ↓</a>
+    </div>
+
+    <div class="lab-card">
+        <h3>02 · Prediction Journey</h3>
+        <p>Explore the workflow from patient-generated text to ensemble output.</p>
+        <a href="#journey">View journey ↓</a>
+    </div>
+
+    <div class="lab-card">
+        <h3>03 · What-If Explorer</h3>
+        <p>Change sample text and compare the resulting predictions.</p>
+        <a href="#whatif">Try What-If ↓</a>
+    </div>
+
+    <div class="lab-card">
+        <h3>04 · Behaviour Fingerprint</h3>
+        <p>Review individual model outputs across stored sessions.</p>
+        <a href="#fingerprint">Explore behaviour ↓</a>
+    </div>
+
+    <div class="lab-card">
+        <h3>05 · Research Insights</h3>
+        <p>Generate a summary of model agreement and ensemble behaviour.</p>
+        <a href="#insights">View insights ↓</a>
+    </div>
+
+</div>
+
+<!-- CONSENSUS -->
+
+<section class="lab-section" id="consensus">
+
+    <h2>01 · AI Consensus Intelligence</h2>
+
+    <p>
+        This section examines how frequently the three existing
+        models agree on their predicted classes.
+    </p>
+
+    {% set total = namespace(value=0) %}
+    {% set unanimous = namespace(value=0) %}
+    {% set partial = namespace(value=0) %}
+    {% set different = namespace(value=0) %}
+
+    {% for row in rows %}
+        {% set p = row.get('result', {}).get('model_predictions', {}) %}
+        {% set a = p.get('BioBERT', {}).get('predicted_disease', '') %}
+        {% set b = p.get('PubMedBERT', {}).get('predicted_disease', '') %}
+        {% set c = p.get('DeBERTa', {}).get('predicted_disease', '') %}
+
+        {% if a and b and c %}
+            {% set total.value = total.value + 1 %}
+
+            {% if a == b and b == c %}
+                {% set unanimous.value = unanimous.value + 1 %}
+            {% elif a == b or b == c or a == c %}
+                {% set partial.value = partial.value + 1 %}
+            {% else %}
+                {% set different.value = different.value + 1 %}
+            {% endif %}
+        {% endif %}
+    {% endfor %}
+
+    <div class="lab-grid">
+
+        <div class="lab-card">
+            <h3>{{ total.value }}</h3>
+            <p>Comparable sessions</p>
+        </div>
+
+        <div class="lab-card">
+            <h3>{{ unanimous.value }}</h3>
+            <p>Unanimous agreement</p>
+        </div>
+
+        <div class="lab-card">
+            <h3>{{ partial.value }}</h3>
+            <p>Partial agreement</p>
+        </div>
+
+        <div class="lab-card">
+            <h3>{{ different.value }}</h3>
+            <p>All models differ</p>
+        </div>
+
+    </div>
+
+    <p class="lab-muted">
+        Counts are calculated from saved sessions with all three
+        individual model outputs. Agreement does not establish accuracy.
+    </p>
+
+</section>
+
+<!-- JOURNEY -->
+
+<section class="lab-section" id="journey">
+
+    <h2>02 · Prediction Journey Map</h2>
+
+    <p>Explore the architecture of the existing ensemble framework.</p>
+
+    <div class="lab-flow">
+
+        <div class="lab-node">Patient-generated text</div>
+
+        <span class="lab-arrow">→</span>
+
+        <div class="lab-node">BioBERT</div>
+
+        <div class="lab-node">PubMedBERT</div>
+
+        <div class="lab-node">DeBERTa</div>
+
+        <span class="lab-arrow">→</span>
+
+        <div class="lab-node">Soft Voting</div>
+
+        <span class="lab-arrow">→</span>
+
+        <div class="lab-node">Ensemble output</div>
+
+    </div>
+
+    <div class="lab-result">
+        <strong>Framework explanation</strong>
+        <p>
+            Each model processes the same input text.
+            Their output score vectors are averaged using soft voting.
+            The class with the highest average score becomes
+            the ensemble prediction.
+        </p>
+    </div>
+
+</section>
+
+<!-- WHAT IF -->
+
+<section class="lab-section" id="whatif">
+
+    <h2>03 · What-If Text Explorer</h2>
+
+    <p>
+        Compare the ensemble output for an original sample and an edited
+        sample. Use synthetic example text only.
+    </p>
+
+    <form method="POST" action="{{ url_for('ai_intelligence_lab') }}">
+
+        <label for="original_text">
+            <strong>Original sample text</strong>
+        </label>
+
+        <textarea
+            class="lab-input"
+            id="original_text"
+            name="original_text"
+            rows="4"
+            maxlength="3000"
+            placeholder="Enter the original sample text..."
+        >{{ original_text }}</textarea>
+
+        <label for="edited_text">
+            <strong>Edited sample text</strong>
+        </label>
+
+        <textarea
+            class="lab-input"
+            id="edited_text"
+            name="edited_text"
+            rows="4"
+            maxlength="3000"
+            required
+            placeholder="Enter the edited sample text..."
+        >{{ edited_text }}</textarea>
+
+        <button class="lab-button" type="submit">
+            Run What-If Comparison
+        </button>
+
+    </form>
+
+    {% if what_if_result %}
+
+    <div class="lab-result">
+
+        <h3>Edited Sample Result</h3>
+
+        <p>
+            <strong>Ensemble output:</strong>
+            {{ what_if_result.predicted_disease }}
+        </p>
+
+        <p>
+            <strong>Ensemble score:</strong>
+            {{ what_if_result.confidence }}%
+        </p>
+
+        <h4>Individual Model Outputs</h4>
+
+        <table class="lab-table">
+            <thead>
+                <tr>
+                    <th>Model</th>
+                    <th>Prediction</th>
+                    <th>Score</th>
+                </tr>
+            </thead>
+
+            <tbody>
+                {% for name, prediction in what_if_result.model_predictions.items() %}
+                <tr>
+                    <td>{{ name }}</td>
+                    <td>{{ prediction.predicted_disease }}</td>
+                    <td>{{ prediction.confidence }}%</td>
+                </tr>
+                {% endfor %}
+            </tbody>
+        </table>
+
+        {% if original_result %}
+
+        <h4>Original vs Edited Sample</h4>
+
+        <table class="lab-table">
+            <thead>
+                <tr>
+                    <th>Comparison</th>
+                    <th>Original</th>
+                    <th>Edited</th>
+                </tr>
+            </thead>
+
+            <tbody>
+                <tr>
+                    <td>Ensemble output</td>
+                    <td>{{ original_result.predicted_disease }}</td>
+                    <td>{{ what_if_result.predicted_disease }}</td>
+                </tr>
+                <tr>
+                    <td>Ensemble score</td>
+                    <td>{{ original_result.confidence }}%</td>
+                    <td>{{ what_if_result.confidence }}%</td>
+                </tr>
+            </tbody>
+        </table>
+
+        {% if original_result.predicted_disease == what_if_result.predicted_disease %}
+        <p><strong>Observation:</strong> The ensemble selected the same class for both samples.</p>
+        {% else %}
+        <p><strong>Observation:</strong> The ensemble selected different classes for the two samples.</p>
+        {% endif %}
+
+        {% endif %}
+
+    </div>
+
+    {% endif %}
+
+    <p class="lab-muted">
+        This is an exploratory model comparison, not a medical test.
+        A changed output does not prove that a particular word caused
+        the change.
+    </p>
+
+</section>
+
+<!-- FINGERPRINT -->
+
+<section class="lab-section" id="fingerprint">
+
+    <h2>04 · Model Behaviour Fingerprint</h2>
+
+    <p>
+        Review how the existing three models behave across saved
+        prediction sessions.
+    </p>
+
+    {% if rows %}
+
+    <div style="overflow-x:auto;">
+
+        <table class="lab-table">
+
+            <thead>
+                <tr>
+                    <th>Session</th>
+                    <th>BioBERT</th>
+                    <th>PubMedBERT</th>
+                    <th>DeBERTa</th>
+                    <th>Ensemble</th>
+                </tr>
+            </thead>
+
+            <tbody>
+
+                {% for row in rows %}
+
+                {% set result = row.get('result', {}) %}
+                {% set predictions = result.get('model_predictions', {}) %}
+
+                <tr>
+                    <td>{{ row.get('created', 'N/A') }}</td>
+
+                    <td>
+                        {{ predictions.get('BioBERT', {}).get('predicted_disease', 'N/A') }}
+                    </td>
+
+                    <td>
+                        {{ predictions.get('PubMedBERT', {}).get('predicted_disease', 'N/A') }}
+                    </td>
+
+                    <td>
+                        {{ predictions.get('DeBERTa', {}).get('predicted_disease', 'N/A') }}
+                    </td>
+
+                    <td>
+                        <strong>{{ result.get('predicted_disease', 'N/A') }}</strong>
+                    </td>
+                </tr>
+
+                {% endfor %}
+
+            </tbody>
+
+        </table>
+
+    </div>
+
+    {% else %}
+
+    <p>No saved sessions available yet.</p>
+
+    {% endif %}
+
+</section>
+
+<!-- RESEARCH INSIGHTS -->
+
+<section class="lab-section" id="insights">
+
+    <h2>05 · Research Insight Generator</h2>
+
+    <p>
+        Generate a summary from your saved model comparisons.
+    </p>
+
+    <div class="lab-grid">
+
+        <div class="lab-card">
+            <h3>{{ total.value }}</h3>
+            <p>Comparable sessions</p>
+        </div>
+
+        <div class="lab-card">
+            <h3>
+                {% if total.value > 0 %}
+                    {{ ((unanimous.value / total.value) * 100)|round(1) }}%
+                {% else %}
+                    N/A
+                {% endif %}
+            </h3>
+            <p>Unanimous agreement rate</p>
+        </div>
+
+        <div class="lab-card">
+            <h3>
+                {% if total.value > 0 %}
+                    {{ ((different.value / total.value) * 100)|round(1) }}%
+                {% else %}
+                    N/A
+                {% endif %}
+            </h3>
+            <p>Complete disagreement rate</p>
+        </div>
+
+    </div>
+
+    <div class="lab-result" id="researchSummary">
+
+        <h3>Research Summary</h3>
+
+        {% if total.value > 0 %}
+
+        <p>
+            Across {{ total.value }} saved comparable sessions,
+            the three-model ensemble showed unanimous agreement
+            in {{ unanimous.value }} sessions,
+            partial agreement in {{ partial.value }} sessions,
+            and three-way disagreement in {{ different.value }} sessions.
+        </p>
+
+        <p>
+            These observations describe output consistency within
+            the saved sessions. They do not measure predictive accuracy
+            or clinical reliability.
+        </p>
+
+        {% else %}
+
+        <p>
+            No comparable sessions are available.
+            Run sample analyses to generate research observations.
+        </p>
+
+        {% endif %}
+
+        <button
+            type="button"
+            class="lab-button"
+            onclick="copyResearchSummary()"
+        >
+            Copy Research Summary
+        </button>
+
+        <span id="copyStatus" class="lab-muted"></span>
+
+    </div>
+
+</section>
+
+<div class="lab-section">
+    <h3>Research Disclaimer</h3>
+    <p>
+        MediSense AI is an academic research prototype.
+        Model outputs and scores are experimental and have not been
+        clinically validated. They must not be used for diagnosis
+        or treatment decisions.
+    </p>
+</div>
+
+<script>
+function copyResearchSummary() {
+    const summary = document.getElementById("researchSummary");
+    const text = summary.innerText;
+
+    navigator.clipboard.writeText(text)
+        .then(() => {
+            document.getElementById("copyStatus").textContent =
+                "Summary copied successfully.";
+        })
+        .catch(() => {
+            document.getElementById("copyStatus").textContent =
+                "Copy unavailable in this window.";
+        });
+}
+</script>
+
+{% endblock %}
