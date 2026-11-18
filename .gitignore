@@ -3,6 +3,7 @@ __pycache__/
 .venv/
 venv/
 .env
+desktop.ini
 
 # Trained transformer models
 models/
@@ -20,4 +21,3 @@ dataset/
 *.log
 history.json
 *.lnk
-desktop.ini
